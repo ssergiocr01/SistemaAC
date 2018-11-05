@@ -3,7 +3,7 @@ $('#modalEditar').on('shown.bs.modal', function () {
     $('#myInput').focus();
 });
 
-function getUsuario(id,action) {
+function getUsuario(id, action) {
     $.ajax({
         type: "POST",
         url: action,
@@ -72,8 +72,8 @@ function getRoles(action) {
         url: action,
         data: {},
         success: function (response) {
-            if (j==0){
-                for (var i = 0; i < response.length; i++){
+            if (j == 0) {
+                for (var i = 0; i < response.length; i++) {
                     document.getElementById('Select').options[i] = new Option(response[i].text, response[i].value);
                     document.getElementById('SelectNuevo').options[i] = new Option(response[i].text, response[i].value);
                 }
@@ -113,7 +113,7 @@ function editarUsuario(action) {
             id, userName, email, phoneNumber, accessFailedCount,
             concurrencyStamp, emailConfirmed, lockoutEnabled, lockoutEnd,
             normalizedEmail, normalizedUserName, passwordHash, phoneNumberConfirmed,
-            securityStamp, twoFactorEnabled,selectRole
+            securityStamp, twoFactorEnabled, selectRole
         },
         success: function (response) {
             if (response == "Save") {
@@ -163,7 +163,7 @@ function crearUsuario(action) {
         alert("Ingrese el email del usuario");
     }
     else {
-        if (passwordHash=="") {
+        if (passwordHash == "") {
             $('#PasswordHashNuevo').focus();
             alert("Ingrese el password del usuario");
         }
@@ -186,4 +186,14 @@ function crearUsuario(action) {
         }
     }
 
+}
+
+var agregarCategoria = () => {
+    var nombre = document.getElementById("Nombre").value;
+    var descripcion = document.getElementById("Descripcion").value;
+    var estados = document.getElementById('Estado');
+    var estado = estados.options[estados.selectedIndex].value;
+    var action = 'Categorias/guardarCategoria';
+    var categoria = new Categorias(nombre, descripcion, estado, action);
+    categoria.agregarCategoria();
 }
