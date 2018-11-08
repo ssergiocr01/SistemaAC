@@ -2,6 +2,9 @@
 $('#modalEditar').on('shown.bs.modal', function () {
     $('#myInput').focus();
 });
+$('#modalAC').on('shown.bs.modal', function () {
+    $('#Nombre').focus();
+});
 
 function getUsuario(id, action) {
     $.ajax({
@@ -188,6 +191,15 @@ function crearUsuario(action) {
 
 }
 
+
+// Tabla Categorias
+$().ready(() => {
+    document.getElementById("filtrar").focus();
+    filtrarDatos(1);
+});
+
+var idCategoria;
+
 var agregarCategoria = () => {
     var nombre = document.getElementById("Nombre").value;
     var descripcion = document.getElementById("Descripcion").value;
@@ -196,4 +208,24 @@ var agregarCategoria = () => {
     var action = 'Categorias/guardarCategoria';
     var categoria = new Categorias(nombre, descripcion, estado, action);
     categoria.agregarCategoria();
+}
+
+var filtrarDatos = (numPagina) => {
+    var valor = document.getElementById("filtrar").value;
+    var action = 'Categorias/filtrarDatos';
+    var categoria = new Categorias(valor, "", "", action);
+    categoria.filtrarDatos(numPagina);
+}
+
+var editarEstado = (id) => {
+    idCategoria = id;
+    var action = 'Categorias/getCategorias';
+    var categoria = new Categorias("", "", "", action);
+    categoria.qetCategoria(id);
+}
+
+var editarCategoria = () => {
+    var action = 'Categorias/editarCategoria';
+    var categoria = new Categorias("", "", "", action);
+    categoria.editarCategoria(idCategoria, "estado");
 }
