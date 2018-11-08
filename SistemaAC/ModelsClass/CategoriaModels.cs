@@ -4,7 +4,6 @@ using SistemaAC.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace SistemaAC.ModelsClass
 {
@@ -36,19 +35,37 @@ namespace SistemaAC.ModelsClass
                 Code = "Save",
                 Description = "Save"
             });
-
             return errorList;
         }
 
-        public List<object[]> filtrarDatos(int numPagina, string valor)
+        public List<object[]> filtrarDatos(int numPagina, string valor, string order)
         {
-            int count = 0, cant, numRegistros = 0, inicio = 0, reg_por_pagina = 5;
+            int count = 0, cant, numRegistros = 0, inicio = 0, reg_por_pagina = 3;
             int can_paginas, pagina;
             string dataFilter = "", paginador = "", Estado = null;
             List<object[]> data = new List<object[]>();
             IEnumerable<Categoria> query;
-            var categorias = context.Categoria.OrderBy(c => c.Nombre).ToList();
+            List<Categoria> categorias = null;
+            switch (order)
+            {
+                case "nombre":
+                    categorias = context.Categoria.OrderBy(c => c.Nombre).ToList();
+                    break;
+                case "des":
+                    categorias = context.Categoria.OrderBy(c => c.Descripcion).ToList();
+                    break;
+                case "estado":
+                    categorias = context.Categoria.OrderBy(c => c.Estado).ToList();
+                    break;
+                default:
+                    break;
+            }
+
             numRegistros = categorias.Count;
+            if ((numRegistros % reg_por_pagina) > 0)
+            {
+                numRegistros += 1;
+            }
             inicio = (numPagina - 1) * reg_por_pagina;
             can_paginas = (numRegistros / reg_por_pagina);
             if (valor == "null")
@@ -64,21 +81,42 @@ namespace SistemaAC.ModelsClass
             {
                 if (item.Estado == true)
                 {
-                    Estado = "<a data-toggle='modal' data-target='#ModalEstado' onclick='editarEstado(" + item.CategoriaID + ")' class='btn btn-success'>Activo</a>";
+                    Estado = "<a data-toggle='modal' data-target='#ModalEstado' onclick='editarEstado(" + item.CategoriaID + ',' + 0 + ")' " +
+                        "class='btn btn-success'>Activo</a>";
                 }
                 else
                 {
-                    Estado = "<a data-toggle='modal' data-target='#ModalEstado' onclick='editarEstado(" + item.CategoriaID + ")' class='btn btn-danger'>No activo</a>";
+                    Estado = "<a data-toggle='modal' data-target='#ModalEstado' onclick='editarEstado(" + item.CategoriaID + ',' + 0 + ")' " +
+                        "class='btn btn-danger'>No activo</a>";
                 }
                 dataFilter += "<tr>" +
                       "<td>" + item.Nombre + "</td>" +
                       "<td>" + item.Descripcion + "</td>" +
                       "<td>" + Estado + " </td>" +
                       "<td>" +
-                      "<a data-toggle='modal' data-target='#myModal' class='btn btn-success'>Editar</a> &nbsp;" +
-                      "<a data-toggle='modal' data-target='#myModal3' class='btn btn-danger' >Eliminar</a>" +
+                      "<a data-toggle='modal' data-target='#modalAC' onclick='editarEstado(" + item.CategoriaID + ',' + 1 + ")'" +
+                      "class='btn btn-warning'>Editar</a> &nbsp;" +
                       "</td>" +
                   "</tr>";
+            }
+            if (valor == "null")
+            {
+                if (numPagina > 1)
+                {
+                    pagina = numPagina - 1;
+                    paginador += "<a class='btn btn-default' onclick='filtrarDatos(" + 1 + ',' + '"' + order + '"' + ")'> << </a>" +
+                    "<a class='btn btn-default' onclick='filtrarDatos(" + pagina + ',' + '"' + order + '"' + ")'> < </a>";
+                }
+                if (1 < can_paginas)
+                {
+                    paginador += "<strong class='btn btn-success'>" + numPagina + ".de." + can_paginas + "</strong>";
+                }
+                if (numPagina < can_paginas)
+                {
+                    pagina = numPagina + 1;
+                    paginador += "<a class='btn btn-default' onclick='filtrarDatos(" + pagina + ',' + '"' + order + '"' + ")'>  > </a>" +
+                                 "<a class='btn btn-default' onclick='filtrarDatos(" + can_paginas + ',' + '"' + order + '"' + ")'> >> </a>";
+                }
             }
             object[] dataObj = { dataFilter, paginador };
             data.Add(dataObj);
@@ -89,13 +127,13 @@ namespace SistemaAC.ModelsClass
             return context.Categoria.Where(c => c.CategoriaID == id).ToList();
         }
 
-        public List<IdentityError> editarCategoria(int idCategoria, string nombre, string descripcion, Boolean estado, string funcion)
+        public List<IdentityError> editarCategoria(int idCategoria, string nombre, string descripcion, Boolean estado, int funcion)
         {
             var errorList = new List<IdentityError>();
             string code = "", des = "";
             switch (funcion)
             {
-                case "estado":
+                case 0:
                     if (estado)
                     {
                         estados = false;
@@ -104,28 +142,29 @@ namespace SistemaAC.ModelsClass
                     {
                         estados = true;
                     }
-                    var categoria = new Categoria()
-                    {
-                        CategoriaID = idCategoria,
-                        Nombre = nombre,
-                        Descripcion = descripcion,
-                        Estado = estados
-                    };
-                    try
-                    {
-                        context.Update(categoria);
-                        context.SaveChanges();
-
-                        code = "Save";
-                        des = "Save";
-                    }
-                    catch (Exception ex)
-                    {
-                        code = "error";
-                        des = ex.Message;                        
-                    }
-
                     break;
+                case 1:
+                    estados = estado;
+                    break;
+            }
+            var categoria = new Categoria()
+            {
+                CategoriaID = idCategoria,
+                Nombre = nombre,
+                Descripcion = descripcion,
+                Estado = estados
+            };
+            try
+            {
+                context.Update(categoria);
+                context.SaveChanges();
+                code = "Save";
+                des = "Save";
+            }
+            catch (Exception ex)
+            {
+                code = "error";
+                des = ex.Message;
             }
             errorList.Add(new IdentityError
             {

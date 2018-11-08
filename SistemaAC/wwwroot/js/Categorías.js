@@ -8,7 +8,7 @@ class Categorias {
         this.action = action;
     }
 
-    agregarCategoria() {
+    agregarCategoria(id, funcion) {
         if (this.nombre == "") {
             document.getElementById("Nombre").focus();
         } else {
@@ -18,7 +18,6 @@ class Categorias {
                 if (this.estado == "0") {
                     document.getElementById("mensaje").innerHTML = "Seleccione un estado";
                 } else {
-
                     var nombre = this.nombre;
                     var descripcion = this.descripcion;
                     var estado = this.estado;
@@ -28,7 +27,7 @@ class Categorias {
                         type: "POST",
                         url: action,
                         data: {
-                            nombre, descripcion, estado
+                            id, nombre, descripcion, estado, funcion
                         },
                         success: (response) => {
                             $.each(response, (index, val) => {
@@ -48,7 +47,7 @@ class Categorias {
         }
     }
 
-    filtrarDatos(numPagina) {
+    filtrarDatos(numPagina, order) {
         var valor = this.nombre;
         var action = this.action;
         if (valor == "") {
@@ -57,7 +56,7 @@ class Categorias {
         $.ajax({
             type: "POST",
             url: action,
-            data: { valor, numPagina },
+            data: { valor, numPagina, order },
             success: (response) => {
                 console.log(response);
                 $.each(response, (index, val) => {
@@ -70,7 +69,7 @@ class Categorias {
         });
     }
 
-    qetCategoria(id) {
+    qetCategoria(id, funcion) {
         var action = this.action;
         $.ajax({
             type: "POST",
@@ -78,10 +77,20 @@ class Categorias {
             data: { id },
             success: (response) => {
                 console.log(response);
-                if (response[0].estado) {
-                    document.getElementById("titleCategoria").innerHTML = "¿Está seguro(a) de desactivar la categoría? " + response[0].nombre;
+                if (funcion == 0) {
+                    if (response[0].estado) {
+                        document.getElementById("titleCategoria").innerHTML = "¿Está seguro(a) de desactivar la categoría? " + response[0].nombre;
+                    } else {
+                        document.getElementById("titleCategoria").innerHTML = "¿Está seguro(a) de habilitar la categoría? " + response[0].nombre;
+                    }
                 } else {
-                    document.getElementById("titleCategoria").innerHTML = "¿Está seguro(a) de habilitar la categoría? " + response[0].nombre;
+                    document.getElementById("Nombre").value = response[0].nombre;
+                    document.getElementById("Descripcion").value = response[0].descripcion;
+                    if (response[0].estado) {
+                        document.getElementById("Estado").selectedIndex = 1;
+                    } else {
+                        document.getElementById("Estado").selectedIndex = 2;
+                    }
                 }
                 localStorage.setItem("categoria", JSON.stringify(response));
             }
@@ -89,26 +98,12 @@ class Categorias {
     }
 
     editarCategoria(id, funcion) {
-        var nombre = null;
-        var descripcion = null;
-        var estado = null;
-        var action = null;
-
-        switch (funcion) {
-            case "estado":
-                var response = JSON.parse(localStorage.getItem("categoria"));
-                nombre = response[0].nombre;
-                descripcion = response[0].descripcion;
-                estado = response[0].estado;
-                localStorage.removeItem("categoria");
-                this.editar(id,nombre,descripcion,estado,funcion);
-                break;
-            default:
-        }
-    }
-
-    editar(id, nombre, descripcion, estado, funcion) {
         var action = this.action;
+        var response = JSON.parse(localStorage.getItem("categoria"));
+        var nombre = response[0].nombre;
+        var descripcion = response[0].descripcion;
+        var estado = response[0].estado;
+        localStorage.removeItem("categoria");
         $.ajax({
             type: "POST",
             url: action,
@@ -127,6 +122,6 @@ class Categorias {
         document.getElementById("Estado").selectedIndex = 0;
         $('#modalAC').modal('hide');
         $('#ModalEstado').modal('hide');
-        filtrarDatos(1);
+        filtrarDatos(1, "nombre");
     }
 }

@@ -127,8 +127,6 @@ function editarUsuario(action) {
             }
         }
     });
-
-
 }
 
 function ocultarDetalleUsuario() {
@@ -188,44 +186,48 @@ function crearUsuario(action) {
             });
         }
     }
-
 }
-
 
 // Tabla Categorias
 $().ready(() => {
     document.getElementById("filtrar").focus();
-    filtrarDatos(1);
+    filtrarDatos(1, "nombre");
 });
 
 var idCategoria;
+var funcion = 0;
 
 var agregarCategoria = () => {
     var nombre = document.getElementById("Nombre").value;
     var descripcion = document.getElementById("Descripcion").value;
     var estados = document.getElementById('Estado');
     var estado = estados.options[estados.selectedIndex].value;
-    var action = 'Categorias/guardarCategoria';
+    if (funcion == 0) {
+        var action = 'Categorias/guardarCategoria';
+    } else {
+        var action = 'Categorias/editarCategoria';
+    }
     var categoria = new Categorias(nombre, descripcion, estado, action);
-    categoria.agregarCategoria();
+    categoria.agregarCategoria(idCategoria, funcion);
 }
 
-var filtrarDatos = (numPagina) => {
+var filtrarDatos = (numPagina, order) => {
     var valor = document.getElementById("filtrar").value;
     var action = 'Categorias/filtrarDatos';
     var categoria = new Categorias(valor, "", "", action);
-    categoria.filtrarDatos(numPagina);
+    categoria.filtrarDatos(numPagina, order);
 }
 
-var editarEstado = (id) => {
+var editarEstado = (id, fun) => {
     idCategoria = id;
+    funcion = fun;
     var action = 'Categorias/getCategorias';
     var categoria = new Categorias("", "", "", action);
-    categoria.qetCategoria(id);
+    categoria.qetCategoria(id, funcion);
 }
 
 var editarCategoria = () => {
     var action = 'Categorias/editarCategoria';
     var categoria = new Categorias("", "", "", action);
-    categoria.editarCategoria(idCategoria, "estado");
+    categoria.editarCategoria(idCategoria, funcion);
 }
