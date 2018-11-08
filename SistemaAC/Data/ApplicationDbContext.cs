@@ -26,5 +26,7 @@ namespace SistemaAC.Data
         public DbSet<ApplicationUser> ApplicationUser { get; set; }
 
         public DbSet<Categoria> Categoria { get; set; }
+
+        public DbSet<SistemaAC.Models.Curso> Curso { get; set; }
     }
 }
